@@ -6,10 +6,10 @@ box.cfg{
     listen = '3031',
     log = 'text.log'
 }
-
 box.schema.create_space('kv', {if_not_exists = true})
 box.space.kv:create_index('primary', {parts = {1, 'string'}, if_not_exists = true})
 box.schema.user.enable('guest', {if_not_exists = true})
+
 
 local function getValue(key)
     local result = box.space.kv:select(key)
@@ -59,9 +59,12 @@ local function postHandler(req)
 end
 
 local function putHandler(req)
-    local body = req:read()
-    local data = json.decode(body)
+    local body, err = req:read()
+    if not err then
+	    return {status = 400, body = 'Bad request: Invalid body'}
+    end
     
+    local data = json.decode(body)
     if not data then
         log.warn('PUT /kv: Invalid JSON body')
         return { status = 400, body = 'Bad Request: Invalid JSON'}
@@ -72,7 +75,6 @@ local function putHandler(req)
     local key = path:match(reg, 2):sub(2)
     local value = data['value']
 
-
     local err = getValue(key)
     if not err then
         log.warn('PUT /kv: Key does not exists')
@@ -82,22 +84,17 @@ local function putHandler(req)
         log.info('PUT /kv, %s is updated', key)
         return {status = 201, body = "Updated"}
     end
-    
-
-    
-
 end
 
 local function getHandler(req)
     local path = req.path
     local reg = '/%w+'
     local key = path:match(reg, 2):sub(2)
-
     local value = getValue(key)
-
+    
     if not value then
         log.warn('GET /kv/%s: Missing key', key)
-        return {status = 404, body = "Bad Request: Missing key"}
+        return {status = 404, body = "Bad Request: Key does not exists"}
     end
 
     log.info('GET /kv: Value received')
@@ -113,13 +110,17 @@ local function deleteHandler(req)
 
     if not value then
         log.warn('GET /kv: Missing key')
-        return {status = 404, body = "Bad Request: Missing key" }
+        return {status = 404, body = "Bad Request: Key does not exists" }
     end
 
     deleteValue(key)
     log.info('GET /kv: Key deleted', key)
 
     return { status = 201, body = 'Deleted'}
+end
+
+local function errorHandler(req)
+    return { status = 404, body = 'Error path'}
 end
 
 local server = httpd.new('0.0.0.0', 8080, {
@@ -131,5 +132,6 @@ server:route({path = '/kv', method = 'POST'}, postHandler)
 server:route({path = '/kv/%w+', method = 'PUT'}, putHandler)
 server:route({path = '/kv/%w+', method = 'GET'}, getHandler)
 server:route({path = '/kv/%w+', method = 'DELETE'}, deleteHandler)
+server:route({path = '/%w+'}, errorHandler)
 
 server:start()
