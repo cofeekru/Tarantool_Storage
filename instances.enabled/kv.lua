@@ -36,9 +36,12 @@ local function deleteValue(key)
 end
 
 local function postHandler(req)
-    local body = req:read()
-    local data = json.decode(body)
+    local body, err = req:read()
+    if not err then
+	    return {status = 400, body = 'Bad request: Invalid body'}
+    end
 
+    local data = json.decode(body)
     local key = data['key']
     local value = data['value']
 
@@ -63,11 +66,11 @@ local function putHandler(req)
     if not err then
 	    return {status = 400, body = 'Bad request: Invalid body'}
     end
-    
+
     local data = json.decode(body)
     if not data then
         log.warn('PUT /kv: Invalid JSON body')
-        return { status = 400, body = 'Bad Request: Invalid JSON'}
+        return {status = 400, body = 'Bad Request: Invalid JSON'}
     end
 
     local path = req.path
@@ -75,10 +78,11 @@ local function putHandler(req)
     local key = path:match(reg, 2):sub(2)
     local value = data['value']
 
+
     local err = getValue(key)
     if not err then
         log.warn('PUT /kv: Key does not exists')
-        return { status = 404, body = "Bad Request: Key does not exists" }
+        return {status = 404, body = "Bad Request: Key does not exists"}
     else
         updateValue(key, value)
         log.info('PUT /kv, %s is updated', key)
@@ -115,12 +119,11 @@ local function deleteHandler(req)
 
     deleteValue(key)
     log.info('GET /kv: Key deleted', key)
-
     return { status = 201, body = 'Deleted'}
 end
 
 local function errorHandler(req)
-    return { status = 404, body = 'Error path'}
+    return { status = 404, body = 'Error request'}
 end
 
 local server = httpd.new('0.0.0.0', 8080, {
