@@ -9,7 +9,7 @@ box.cfg{
 
 box.schema.create_space('kv', {if_not_exists = true})
 box.space.kv:create_index('primary', {parts = {1, 'string'}, if_not_exists = true})
-box.schema.user.grant('guest', 'read,write,execute', 'universe')
+box.schema.user.enable('guest', {if_not_exists = true})
 
 local function getValue(key)
     local result = box.space.kv:select(key)
