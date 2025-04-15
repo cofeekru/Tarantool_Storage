@@ -1,0 +1,111 @@
+openapi: 3.0.2
+info:
+  title: Key-Value Storage
+  description: May storage any JSON object by key.
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8080
+    description: Dev server
+    
+paths:
+  /kv/{key}:
+    get:
+      summary: Get JSON object by key.
+      operationId: getJSONByKey
+      parameters:
+        - name: key
+          in: path
+          description: Key of JSON object
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Get JSON object by key.
+          content: 
+            application/json:
+              schema:
+                properties:
+                  value: 
+                    description: JSON object by key
+                    type: object
+                    
+                    
+    put:
+      summary: Updated JSON value by key.
+      operationId: updateJSONByKey
+      parameters:
+        - name: key
+          in: path
+          description: Key of JSON object
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+                properties:
+                  value: 
+                    description: Some arbitary JSON
+                    type: object
+                    
+      responses:
+        '200':
+          description: Updated JSON value by key.
+          content: 
+            application/json:
+              schema:
+                properties:
+                  key: 
+                    type: string
+                  value: 
+                    description: JSON
+                    type: object
+    
+    delete:
+      summary: Delete JSON value by key.
+      operationId: deleteJSONByKey
+      parameters:
+        - name: key
+          in: path
+          description: Key of JSON object
+          required: true
+          schema:
+            type: string
+                    
+      responses:
+        '200':
+          description: Delete JSON value by key.
+            
+  /kv:
+    post:
+      summary: Created new key-value.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+                properties:
+                  key: 
+                    type: string
+                  value: 
+                    description: Some arbitary JSON
+                    type: object
+                    
+      responses:
+        '200':
+          description: Created new key-value.
+          content: 
+            application/json:
+              schema:
+                properties:
+                  key: 
+                    type: string
+                  value: 
+                    description: JSON
+                    type: object
+                    
+    
+      
