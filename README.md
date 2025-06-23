@@ -10,19 +10,22 @@ _Key-Value_ хранилище на основе Tarantool доступное п
 
 ## Для запуска необходимо:
 
-### 1. Установить tarantool:
+1) Установить tarantool:
 ```
   sudo apt-get -y tarantool
-```   
-### 2. Установить tt:
+```  
+ 
+2) Установить tt:
 ```
   sudo apt-get install tt
 ```
-### 3. Установить модуль http-server используя tt:
+
+3) Установить модуль http-server используя tt:
 ```
   tt rocks install http
 ```
-### 4. Запустить базу данных:
+
+4) Запустить базу данных:
 ```
   tt start
 ```
